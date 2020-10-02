@@ -16,7 +16,7 @@ public interface IUploadService {
 
     @Multipart
     @POST("api/file")
-    Call<User> Upload(
+    Call<ResponseBody> Upload(
             @Part MultipartBody.Part photo,
             @Part("description") RequestBody description
             );

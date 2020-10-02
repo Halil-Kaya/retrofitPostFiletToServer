@@ -66,23 +66,7 @@ public class MainActivity extends AppCompatActivity {
         btnUpload = findViewById(R.id.btnUpload);
 
 
-        IUploadService uploadService = ApiClient.getClient().create(IUploadService.class);
-        System.out.println("kapi6");
-        Call<String> call = uploadService.asd();
 
-        call.enqueue(new Callback<String>() {
-            @Override
-            public void onResponse(Call<String> call, Response<String> response) {
-                System.out.println("worked?");
-                System.out.println(response.body());
-            }
-
-            @Override
-            public void onFailure(Call<String> call, Throwable t) {
-                System.out.println("hata oldu");
-                System.out.println(t.getMessage());
-            }
-        });
 
         image_view.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void uploadToServer(){
 
-
         IUploadService uploadService = ApiClient.getClient().create(IUploadService.class);
 
         File file = new File(imagePath);
@@ -124,20 +107,19 @@ public class MainActivity extends AppCompatActivity {
 
 
         RequestBody filePart = RequestBody.create(MediaType.parse("multipart/form-data"),file);
+
         MultipartBody.Part files = MultipartBody.Part.createFormData("photo",file.getName(),filePart);
 
-        Call<User> call = uploadService.Upload(files,descriptionPart);
+        Call<ResponseBody> call = uploadService.Upload(files,descriptionPart);
 
-        call.enqueue(new Callback<User>() {
+        call.enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-                System.out.println(response.isSuccessful());
-                System.out.println(response.body().getName());
-                System.out.println("wroked!!!");
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                
             }
 
             @Override
-            public void onFailure(Call<User> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
 
             }
         });
