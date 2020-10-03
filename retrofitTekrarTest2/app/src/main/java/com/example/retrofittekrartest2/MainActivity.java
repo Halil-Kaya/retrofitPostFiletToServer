@@ -1,4 +1,4 @@
-package com.example.retrofit;
+package com.example.retrofittekrartest2;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,10 +11,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.FileUtils;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
@@ -22,13 +21,16 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.example.retrofit.model.User;
-import com.example.retrofit.service.ApiClient;
-import com.example.retrofit.service.IUploadService;
-import com.squareup.picasso.Picasso;
+import com.example.retrofittekrartest2.model.Test;
+import com.example.retrofittekrartest2.service.ApiClient;
+import com.example.retrofittekrartest2.service.IUploadService;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
-import java.util.List;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -39,7 +41,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
-
     private final static int REQUEST_CODE_IMAGE_PICKER = 100;
     private final static int REQUEST_EXTERNAL_STORAGE = 1;
     private final static String[] PERMISSIONS_STORAGE = {
@@ -72,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
-                    openImageChooser();
+                openImageChooser();
 
             }
         });
@@ -84,86 +85,55 @@ public class MainActivity extends AppCompatActivity {
 
                 uploadToServer();
 
-
-
             }
         });
 
 
-
-
-
-
     }
 
+
     public void uploadToServer(){
-        Toast.makeText(this,"uploat etmeye basliyor",Toast.LENGTH_SHORT).show();
-        Toast.makeText(this,"image Path: " + imagePath,Toast.LENGTH_SHORT).show();
+
+
+
 
         IUploadService uploadService = ApiClient.getClient().create(IUploadService.class);
-
         File file = new File(imagePath);
-
-
+        Toast.makeText(this,"total space: "+file,Toast.LENGTH_SHORT).show();
+        System.out.println(file.getTotalSpace());
+        RequestBody filePart =
+                RequestBody.create(
+                        MediaType.parse("image/*"),
+                        file
+                );
         RequestBody descriptionPart = RequestBody.create(MultipartBody.FORM,etVideoName.getText().toString());
-
-
-        RequestBody filePart = RequestBody.create(MediaType.parse("multipart/form-data"),file);
-
         MultipartBody.Part files = MultipartBody.Part.createFormData("photo",file.getName(),filePart);
-        Toast.makeText(this,"paketleri olusturdu " + imagePath,Toast.LENGTH_SHORT).show();
 
         Call<ResponseBody> call = uploadService.Upload(files,descriptionPart);
-        Toast.makeText(this,"gondermeye hazirlaniyor" + imagePath,Toast.LENGTH_SHORT).show();
 
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                Toast.makeText(MainActivity.this,"gonderdi" + imagePath,Toast.LENGTH_SHORT).show();
-
+                Toast.makeText(MainActivity.this,"işlem başarılı",Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Toast.makeText(MainActivity.this,"hata sebebi: " + t.getMessage() + imagePath,Toast.LENGTH_SHORT).show();
-                Toast.makeText(MainActivity.this,"hata sebebi: " + t.getLocalizedMessage(),Toast.LENGTH_SHORT).show();
+
+
+
+                Toast.makeText(MainActivity.this,"hata oldu sebebi: " + t.getMessage(),Toast.LENGTH_SHORT).show();
+                System.out.println(t.getLocalizedMessage());
                 t.printStackTrace();
+
             }
         });
 
 
-    /*
-            File file = new File(imagePath);
-
-            RequestBody photoContent = RequestBody.create(MediaType.parse("multipart/form-data"),file);
-
-            MultipartBody.Part photo = MultipartBody.Part.createFormData("photo",file.getName(),photoContent);
-
-            RequestBody description = RequestBody.create(MediaType.parse("text/plain"),etVideoName.getText().toString());
-
-            IUploadService uploadService = ApiClient.getClient().create(IUploadService.class);
-
-
-
-            uploadService.Upload(photo,description).enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-
-                    if(response.isSuccessful()){
-                        Toast.makeText(getApplicationContext(),"işlem başarılı",Toast.LENGTH_LONG).show();
-                    }
-
-                }
-
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    System.out.println("Warning");
-                }
-            });
-
-*/
 
     }
+
+
 
 
     public void openImageChooser(){
@@ -199,22 +169,18 @@ public class MainActivity extends AppCompatActivity {
         cursor.moveToFirst();
         String result = cursor.getString(column_index);
         cursor.close();
-        System.out.println("result: " + result);
         return result;
     }
 
-    public static void verifiyStoragePermissions(Activity activity){
+    public static void verifiyStoragePermissions(Activity activity) {
         int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-        if(permission != PackageManager.PERMISSION_GRANTED) {
+        if (permission != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
                     activity,
                     PERMISSIONS_STORAGE,
                     REQUEST_EXTERNAL_STORAGE
             );
         }
-
     }
-
-
 }
